@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -12,13 +12,32 @@ namespace Kuinox.SCharpScript
     {
         public static async Task<int> Main(string[] args)
         {
-            if(args.Length != 1)
+            if (args.Length != 1)
             {
-                Console.Error.WriteLine("One, and only one argument is needed, the script path.");
-                return 42;
+                return PrintWrongArgCount();
             }
+
             string scriptLocation = args[0];
-            
+
+            switch(scriptLocation)
+            {
+                case "-h":
+                case "-H":
+                case "/h":
+                case "/H":
+                case "-?":
+                case "/?":
+                case "-help":
+                case "/help":
+                case "--help":
+                    return PrintUsage();
+            }
+
+            if (!File.Exists(scriptLocation))
+            {
+                return PrintFileNotFound(scriptLocation);
+            }
+
             string tempPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(tempPath);
             string script = await File.ReadAllTextAsync(scriptLocation);
@@ -39,7 +58,7 @@ namespace Kuinox.SCharpScript
     <Nullable>enable</Nullable>
 </PropertyGroup>
 " + csproj + "\n</Project>");
-            
+
             await File.WriteAllTextAsync(Path.Combine(tempPath, "Program.cs"), script);
             Process process = new();
             process.StartInfo.FileName = "dotnet";
@@ -52,11 +71,31 @@ namespace Kuinox.SCharpScript
             process.Start();
             process.BeginErrorReadLine();
             process.BeginOutputReadLine();
-            Task task = Console.OpenStandardInput().CopyToAsync(process.StandardInput.BaseStream);
+            var _ = Console.OpenStandardInput().CopyToAsync(process.StandardInput.BaseStream);
             await process.WaitForExitAsync();
-            
+
             Console.WriteLine(process.ExitCode);
             return process.ExitCode;
+        }
+
+        private static int PrintWrongArgCount()
+        {
+            Console.Error.WriteLine("One, and only one, argument is needed, the script path.");
+            return 42;
+        }
+
+        private static int PrintUsage()
+        {
+            Console.WriteLine();
+            Console.WriteLine( "Usage:" );
+            Console.WriteLine( "c# <ScriptPath>" );
+            return 0;
+        }
+
+        private static int PrintFileNotFound(string scriptLocation)
+        {
+            Console.Error.WriteLine( $"The path '{scriptLocation}' does not exist." );
+            return 2;
         }
     }
 }
