@@ -28,4 +28,4 @@ IMqtt3Client client = MqttClient.Factory.CreateMQTT3Client( new MqttClientConfig
 } );
 await Task.Delay( 10000 );
 ```
-(This program will listen to the mosquitto public mqtt server for 10 seconds.)
+(This example will listen to the mosquitto public mqtt server for 10 seconds.)
