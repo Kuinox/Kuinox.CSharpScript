@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,27 +10,29 @@ namespace Kuinox.SCharpScript
 {
     public class Program
     {
-        public static async Task<int> Main(string[] args)
+        public static async Task<int> Main( string[] args )
         {
-            if(args.Length != 1)
+            if( args.Length != 1 )
             {
-                Console.Error.WriteLine("One, and only one argument is needed, the script path.");
-                return 42;
+                Console.Error.WriteLine( "One, and only one argument is needed, the script path." );
+                return 1;
             }
             string scriptLocation = args[0];
-            
-            string tempPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-            Directory.CreateDirectory(tempPath);
-            string script = await File.ReadAllTextAsync(scriptLocation);
-            Regex regex = new(@"<Project[^>]*>.*<\/Project>", RegexOptions.Compiled);
-            Match match = regex.Match(script);
+
+            string tempPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() );
+            Directory.CreateDirectory( tempPath );
+            string script = await File.ReadAllTextAsync( scriptLocation );
+            Regex regex = new( @"<Project[^>]*>(.*)</Project>", RegexOptions.Compiled | RegexOptions.Singleline );
+            Match match = regex.Match( script );
             string csproj = "";
-            if (match.Success)
+            if( match.Success )
             {
-                csproj = match.Value;
-                script = script.Remove(match.Index, match.Length);
+                var capture = match.Groups[1];
+                csproj = capture.Value;
+                int newLineCount = CountLines( csproj );
+                script = new string( '\n', newLineCount ) + script.Remove( match.Index, match.Length );
             }
-            await File.WriteAllTextAsync(Path.Combine(tempPath, "Script.csproj"),
+            await File.WriteAllTextAsync( Path.Combine( tempPath, "Script.csproj" ),
 @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -38,25 +40,38 @@ namespace Kuinox.SCharpScript
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 </PropertyGroup>
-" + csproj + "\n</Project>");
-            
-            await File.WriteAllTextAsync(Path.Combine(tempPath, "Program.cs"), script);
+" + csproj + "\n</Project>" );
+
+            await File.WriteAllTextAsync( Path.Combine( tempPath, "Program.cs" ), script );
             Process process = new();
             process.StartInfo.FileName = "dotnet";
             process.StartInfo.Arguments = $"run --project {tempPath}";
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardInput = true;
-            process.ErrorDataReceived += (p, line) => Console.Error.WriteLine(line.Data);
-            process.OutputDataReceived += (p, line) => Console.WriteLine(line.Data);
+            process.ErrorDataReceived += ( p, line ) => Console.Error.WriteLine( line.Data );
+            process.OutputDataReceived += ( p, line ) => Console.WriteLine( line.Data );
             process.Start();
             process.BeginErrorReadLine();
             process.BeginOutputReadLine();
-            Task task = Console.OpenStandardInput().CopyToAsync(process.StandardInput.BaseStream);
+            Task task = Console.OpenStandardInput().CopyToAsync( process.StandardInput.BaseStream );
             await process.WaitForExitAsync();
-            
-            Console.WriteLine(process.ExitCode);
+
             return process.ExitCode;
+        }
+
+        static int CountLines( string str )
+        {
+            if( str == null )
+                throw new ArgumentNullException( nameof( str ) );
+            if( str == string.Empty )
+                return 0;
+            int index = -1;
+            int count = 0;
+            while( -1 != (index = str.IndexOf( Environment.NewLine, index + 1 )) )
+                count++;
+
+            return count + 1;
         }
     }
 }

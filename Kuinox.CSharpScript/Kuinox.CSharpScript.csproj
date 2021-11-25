@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -7,5 +7,12 @@
     <Nullable>enable</Nullable>
 	<PackAsTool>true</PackAsTool>
 	<ToolCommandName>c#</ToolCommandName>
+    <RepositoryUrl>https://github.com/Kuinox/Kuinox.CSharpScript.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Version>1.0.1</Version>
+    <Authors>Kuinox</Authors>
+    <Description>Dotnet tool allowing to execute a C# file.</Description>
+    <PackageProjectUrl>https://github.com/Kuinox/Kuinox.CSharpScript</PackageProjectUrl>
   </PropertyGroup>
+
 </Project>
