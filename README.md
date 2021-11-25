@@ -8,6 +8,10 @@
 ## Getting Started
 Install it with `dotnet tool install -g Kuinox.CSharpScript`  
 Execute a C# file with `c# Program.cs` in your favorite terminal.
+```csharp
+// Program.cs
+Console.WriteLine("Hello World");
+```
 
 ## .csproj configuration
 This is where this C# scripting tool do things differently.  
