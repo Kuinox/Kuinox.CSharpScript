@@ -11,7 +11,7 @@ Execute a C# file with `c# Program.cs` in your favorite terminal.
 
 ## .csproj configuration
 This is where this lib do things differently.  
-You can put your own csproj configuration at the top of the file to override the projects defaults.
+You can put your own csproj configuration at the top of the file to override the projects defaults.  
 It allow you to import nuget package for example, or configure the project how you want.
 
 ```csharp
