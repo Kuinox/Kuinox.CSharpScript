@@ -14,10 +14,30 @@ namespace Kuinox.SCharpScript
         {
             if( args.Length != 1 )
             {
-                Console.Error.WriteLine( "One, and only one argument is needed, the script path." );
-                return 1;
+                return PrintWrongArgCount();
             }
+
             string scriptLocation = args[0];
+
+            switch( scriptLocation )
+            {
+                case "-h":
+                case "-H":
+                case "/h":
+                case "/H":
+                case "-?":
+                case "/?":
+                case "-help":
+                case "/help":
+                case "--help":
+                    return PrintUsage();
+            }
+
+            if( !File.Exists( scriptLocation ) )
+            {
+                return PrintFileNotFound( scriptLocation );
+            }
+
 
             string tempPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() );
             Directory.CreateDirectory( tempPath );
@@ -54,9 +74,10 @@ namespace Kuinox.SCharpScript
             process.Start();
             process.BeginErrorReadLine();
             process.BeginOutputReadLine();
-            Task task = Console.OpenStandardInput().CopyToAsync( process.StandardInput.BaseStream );
+            _ = Console.OpenStandardInput().CopyToAsync( process.StandardInput.BaseStream );
             await process.WaitForExitAsync();
 
+            Console.WriteLine( process.ExitCode );
             return process.ExitCode;
         }
 
@@ -72,6 +93,25 @@ namespace Kuinox.SCharpScript
                 count++;
 
             return count + 1;
+        }
+        private static int PrintWrongArgCount()
+        {
+            Console.Error.WriteLine( "One, and only one, argument is needed, the script path." );
+            return 42;
+        }
+
+        private static int PrintUsage()
+        {
+            Console.WriteLine();
+            Console.WriteLine( "Usage:" );
+            Console.WriteLine( "c# <ScriptPath>" );
+            return 0;
+        }
+
+        private static int PrintFileNotFound( string scriptLocation )
+        {
+            Console.Error.WriteLine( $"The path '{scriptLocation}' does not exist." );
+            return 2;
         }
     }
 }
