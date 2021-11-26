@@ -42,7 +42,7 @@ namespace Kuinox.SCharpScript
             string tempPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() );
             Directory.CreateDirectory( tempPath );
             string script = await File.ReadAllTextAsync( scriptLocation );
-            Regex regex = new( @"<Project[^>]*>(.*)</Project>", RegexOptions.Compiled | RegexOptions.Singleline );
+            Regex regex = new( @"<Project[^>]*>(.*)</Project>", RegexOptions.Singleline );
             Match match = regex.Match( script );
             string csproj = "";
             if( match.Success )
@@ -78,21 +78,19 @@ namespace Kuinox.SCharpScript
             await process.WaitForExitAsync();
 
             Console.WriteLine( process.ExitCode );
+            Directory.Delete( tempPath, true );
             return process.ExitCode;
         }
 
         static int CountLines( string str )
         {
-            if( str == null )
-                throw new ArgumentNullException( nameof( str ) );
-            if( str == string.Empty )
+            if( str.Length == 0 )
                 return 0;
             int index = -1;
-            int count = 0;
-            while( -1 != (index = str.IndexOf( Environment.NewLine, index + 1 )) )
+            int count = 1;
+            while( -1 != (index = str.IndexOf( '\n', index + 1 )) )
                 count++;
-
-            return count + 1;
+            return count;
         }
         private static int PrintWrongArgCount()
         {
